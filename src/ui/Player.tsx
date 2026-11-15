@@ -228,10 +228,23 @@ export function Player(props: PlayerProps) {
     } else {
       waitPos.current = -1;
       setPhase('playing');
+      let lastPoll = 0;
       const loop = () => {
         raf = requestAnimationFrame(loop);
         const cur = perfRef.current.current;
         const idx = cur?.index ?? null;
+        // Slide / hammer-on / pull-off: follow the pitch of the ringing string.
+        if (cur?.tech && !doneRef.current && ctx.currentTime - lastPoll > 0.06) {
+          lastPoll = ctx.currentTime;
+          const r = eng.readPitch(0.12);
+          const midi = r && r.rms > 0.003 ? r.midi : null;
+          const res = perfRef.current.pitch(ctx.currentTime - 0.06 - latency - startRef.current, midi);
+          if (res.result === 'hit' || res.result === 'wrong') {
+            setFb({ result: res.result, target: res.target!, heard: midi === null ? [] : [midi], at: performance.now() });
+            rerender();
+            if (perfRef.current.done) finish();
+          }
+        }
         if (idx !== lastCurrent.current) {
           lastCurrent.current = idx;
           setHint(false);
@@ -311,7 +324,16 @@ export function Player(props: PlayerProps) {
         if (p) ghosts.push({ string: p.string, fret: p.fret, label: noteName(m), ok });
       }
     }
-    if (fresh.result === 'hit') {
+    const tech = fresh.target.tech;
+    const base = tech ? perf.targets[fresh.target.base!]?.event.notes[0] : undefined;
+    const techWord = tech === 's' ? 'slide' : tech === 'h' ? 'hammer-on' : 'pull-off';
+    if (tech && fresh.result === 'hit') {
+      message = tech === 's' ? 'Smooth slide!' : tech === 'h' ? 'Nice hammer-on!' : 'Clean pull-off!';
+      msgClass = 'hit';
+    } else if (tech && fresh.result === 'wrong') {
+      message = `The ${techWord} didn't reach ${exp.fret ? `fret ${exp.fret}` : 'the open string'} — pick ${base?.fret ? `fret ${base.fret}` : 'the string'} again and try once more`;
+      msgClass = 'wrong';
+    } else if (fresh.result === 'hit') {
       const off = fresh.target.offset;
       message = off !== undefined && Math.abs(off) > 0.08 ? (off < 0 ? 'A little early' : 'A little late') : PRAISE[fresh.target.index % PRAISE.length];
       msgClass = 'hit';
@@ -357,7 +379,8 @@ export function Player(props: PlayerProps) {
         <span><i style={{ background: 'var(--brass)' }} />Fret here (finger number)</span>
       </div>
 
-      {hint && mode === 'wait' && running && shownTarget && <div className="hint">{shownTarget.kind === 'chord' ? `Make the ${shownTarget.chord} shape shown on the fretboard, then strum.` : instruction(targetMarks)}</div>}
+      {mode === 'wait' && running && shownTarget?.tech && <div className="hint">{techHint(shownTarget, perf)}</div>}
+      {hint && mode === 'wait' && running && shownTarget && !shownTarget.tech && <div className="hint">{shownTarget.kind === 'chord' ? `Make the ${shownTarget.chord} shape shown on the fretboard, then strum.` : instruction(targetMarks)}</div>}
 
       {error && <div className="error">{error}</div>}
       {engine && (running || phase === 'demo') && <MicStatus engine={engine} />}
@@ -392,4 +415,14 @@ export function Player(props: PlayerProps) {
       </div>
     </div>
   );
+}
+
+/** What to do for a slide / hammer-on / pull-off, without picking again. */
+function techHint(t: Target, perf: Performance): string {
+  const to = t.event.notes[0];
+  const from = perf.targets[t.base!]?.event.notes[0];
+  const where = (f: number) => (f ? `fret ${f}` : 'open');
+  if (t.tech === 's') return `Don't pick again — keep pressing and slide your finger from ${where(from?.fret ?? 0)} up to ${where(to.fret)} while the note rings.`;
+  if (t.tech === 'h') return `Don't pick again — bring your finger down hard on ${where(to.fret)} so the string sounds by itself.`;
+  return `Don't pick again — pull your finger off ${where(from?.fret ?? 0)} with a little sideways flick so the ${where(to.fret)} note sounds.`;
 }

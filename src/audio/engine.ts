@@ -101,8 +101,8 @@ export class AudioEngine {
   }
 
   /** Current pitch of whatever is ringing (tuner). */
-  readPitch(): PitchReading | null {
-    return estimatePitch(this.buf, this.ctx.sampleRate);
+  readPitch(seconds = 0.3): PitchReading | null {
+    return estimatePitch(this.buf, this.ctx.sampleRate, seconds);
   }
 
   /** The current strum has been accepted: stop judging it, and ignore its tail for `cooldown` s. */

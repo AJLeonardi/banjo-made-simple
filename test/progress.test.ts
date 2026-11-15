@@ -54,10 +54,11 @@ describe('progress', () => {
   it('unlocks lessons in order, honouring placement', () => {
     let p = emptyProgress();
     expect(lessonUnlocked(p, 'meet-banjo')).toBe(true);
-    expect(lessonUnlocked(p, 'picking-hand')).toBe(false);
+    expect(lessonUnlocked(p, 'tuning')).toBe(false);
     p = completeLesson(p, 'meet-banjo', 2);
-    expect(lessonUnlocked(p, 'picking-hand')).toBe(true);
-    expect(nextLesson(p)).toBe('picking-hand');
+    expect(lessonUnlocked(p, 'tuning')).toBe(true);
+    expect(lessonUnlocked(p, 'picking-hand')).toBe(false);
+    expect(nextLesson(p)).toBe('tuning');
     const placed = { ...emptyProgress(), placement: 'some' as const };
     expect(lessonUnlocked(placed, 'alt-thumb')).toBe(true);
     expect(lessonUnlocked(placed, 'meet-banjo')).toBe(true);

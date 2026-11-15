@@ -4,7 +4,7 @@
 
 import { ArrangementKind } from '../music/arranger';
 import { TabNote, Tab, voicingNotes } from '../music/tab';
-import { chordTab, notesTab, openGRamble, ROLLS, rollTab, VAMP, vampTab } from './exercises';
+import { chordTab, notesTab, openGRamble, ROLLS, rollTab, SingleNote, times, VAMP, vampTab } from './exercises';
 
 export type Figure =
   | { type: 'banjo-parts' }
@@ -20,7 +20,7 @@ export interface TuneSource {
 
 export type Step =
   | { kind: 'info'; title: string; body: string[]; figure?: Figure }
-  | { kind: 'tuner'; title: string }
+  | { kind: 'tuner'; title: string; /** Walk through the strings one by one. */ guided?: boolean }
   | {
       kind: 'play';
       title: string;
@@ -60,6 +60,42 @@ const isTab = (s: Tab | TuneSource): s is Tab => 'events' in s;
 export { isTab };
 
 const G = ['G', 'G'];
+
+/** A roll lesson: explain, slowly, in time, faster. */
+function rollLesson(id: string, title: string, summary: string, roll: Parameters<typeof rollTab>[0], body: string[]): Lesson {
+  return {
+    id,
+    title,
+    summary,
+    steps: [
+      { kind: 'info', title, body },
+      { kind: 'play', title: 'Slowly', prompt: 'Follow the letters: T thumb, I index, M middle.', source: rollTab(roll, G), mode: 'wait' },
+      { kind: 'play', title: 'In time', prompt: 'Eight even notes per bar.', source: rollTab(roll, ['G', 'G', 'G', 'G']), mode: 'tempo', bpm: 70, backing: true },
+      { kind: 'play', title: 'Over a chord change', prompt: 'Same roll, G to C and back. Watch the fretboard for the C shape.', source: rollTab(roll, ['G', 'C', 'G', 'G']), mode: 'tempo', bpm: 80, backing: true },
+    ],
+  };
+}
+
+/** A technique drill: the move, three times, in Learn mode. */
+function techDrill(title: string, prompt: string, notes: SingleNote[]): Step {
+  return { kind: 'play', title, prompt, source: notesTab(times(3, notes)), mode: 'wait' };
+}
+
+/** Slide 3rd 2–3, roll, hammer 4th 0–2, finish on the 3rd. One bar of 8ths. */
+const SLIDE_HAMMER_LICK: SingleNote[] = [
+  { s: 3, f: 2, rh: 'T', lh: 2, beats: 0.5 }, { s: 3, f: 3, rh: 'T', lh: 2, tech: 's', beats: 0.5 },
+  { s: 2, rh: 'I', beats: 0.5 }, { s: 1, rh: 'M', beats: 0.5 },
+  { s: 4, rh: 'T', beats: 0.5 }, { s: 4, f: 2, rh: 'T', lh: 2, tech: 'h', beats: 0.5 },
+  { s: 2, rh: 'I', beats: 0.5 }, { s: 3, rh: 'T', beats: 0.5 },
+];
+
+/** Pull 1st 2–0, 5th, then 3rd 2–0 and roll out. One bar of 8ths. */
+const PULL_LICK: SingleNote[] = [
+  { s: 1, f: 2, rh: 'M', lh: 2, beats: 0.5 }, { s: 1, f: 0, rh: 'M', tech: 'p', beats: 0.5 },
+  { s: 5, rh: 'T', beats: 0.5 }, { s: 3, f: 2, rh: 'T', lh: 2, beats: 0.5 },
+  { s: 3, f: 0, rh: 'T', tech: 'p', beats: 0.5 }, { s: 2, rh: 'I', beats: 0.5 },
+  { s: 1, rh: 'M', beats: 0.5 }, { s: 5, rh: 'T', beats: 0.5 },
+];
 
 function tuneLesson(id: string, tune: string, title: string, intro: string[], bpm: number, hasB = true): Lesson {
   const steps: Step[] = [
@@ -112,7 +148,6 @@ export const COURSES: Course[] = [
             ],
             figure: { type: 'fretboard', notes: [5, 4, 3, 2, 1].map((s) => ({ string: s as 1, fret: 0 })), caption: 'Open strings, gDGBD' },
           },
-          { kind: 'tuner', title: 'Tune up' },
           {
             kind: 'info',
             title: 'Reading tab',
@@ -132,6 +167,63 @@ export const COURSES: Course[] = [
               { s: 3, rh: 'T' },
               { s: 2, rh: 'I' },
               { s: 1, rh: 'M' },
+            ]),
+            mode: 'wait',
+          },
+        ],
+      },
+      {
+        id: 'tuning',
+        title: 'Tuning your banjo',
+        summary: 'Open G tuning, the pegs, and tuning by ear.',
+        steps: [
+          {
+            kind: 'info',
+            title: 'Why tune?',
+            body: [
+              'A banjo slips out of tune every time it\'s moved, warmed up or played hard. Tune it every time you pick it up — and the app needs it in tune to hear you right.',
+              'Bluegrass banjo uses open G tuning. From the short 5th string to the 1st: g D G B D. Strum the open strings and you hear a G chord.',
+            ],
+            figure: { type: 'fretboard', notes: [5, 4, 3, 2, 1].map((s) => ({ string: s as 1, fret: 0 })), caption: 'Open G: g D G B D' },
+          },
+          {
+            kind: 'info',
+            title: 'Turning the pegs',
+            body: [
+              'Each string has a tuning peg. Tightening a string raises its note; loosening lowers it. The four main pegs are on the headstock; the 5th string\'s peg sticks out of the side of the neck at the 5th fret.',
+              'Turn slowly while the string rings and watch the needle. If you go past the note, come back down below it and tune up to it again — strings hold their pitch better when tuned up.',
+              'Most banjos have geared pegs, but they\'re still sensitive: small turns.',
+            ],
+          },
+          { kind: 'tuner', title: 'Tune each string', guided: true },
+          {
+            kind: 'info',
+            title: 'Tuning by ear',
+            body: [
+              'No tuner? Get the 4th string close, then tune the others to it. The note at one fret matches the next string open:',
+              '4th string at the 5th fret = open 3rd (G).  3rd string at the 4th fret = open 2nd (B).  2nd string at the 3rd fret = open 1st (D).  1st string at the 5th fret = open 5th (g).',
+              'Play each pair and listen: when they match, the "wobble" between them disappears.',
+            ],
+            figure: {
+              type: 'fretboard',
+              notes: [
+                { string: 4, fret: 5 },
+                { string: 3, fret: 4 },
+                { string: 2, fret: 3 },
+                { string: 1, fret: 5 },
+              ],
+              caption: 'Each dot sounds the same as the next string open',
+            },
+          },
+          {
+            kind: 'play',
+            title: 'Check by ear',
+            prompt: 'Play each fretted note, then the open string it should match. If they sound different, retune the open one.',
+            source: notesTab([
+              { s: 4, f: 5, rh: 'T', lh: 1 }, { s: 3, rh: 'T' },
+              { s: 3, f: 4, rh: 'T', lh: 1 }, { s: 2, rh: 'I' },
+              { s: 2, f: 3, rh: 'I', lh: 1 }, { s: 1, rh: 'M' },
+              { s: 1, f: 5, rh: 'M', lh: 1 }, { s: 5, rh: 'T' },
             ]),
             mode: 'wait',
           },
@@ -245,6 +337,14 @@ export const COURSES: Course[] = [
           { kind: 'play', title: 'In time', prompt: 'Smooth turnaround in the middle.', source: rollTab(ROLLS.forwardReverse, ['G', 'G', 'G', 'G']), mode: 'tempo', bpm: 75, backing: true },
         ],
       },
+      rollLesson('index-leading', 'Index-leading roll', 'I M T — start with the index finger.', ROLLS.indexLeading, [
+        'This roll starts with the index finger: I M T, I M T, I M. Strings 2 1 5, 2 1 5, 2 1.',
+        'It\'s great under melody on the 2nd string, and it sounds like a forward roll that starts in a different place.',
+      ]),
+      rollLesson('middle-leading', 'Middle-leading roll', 'M T I — start with the middle finger.', ROLLS.middleLeading, [
+        'Now the middle finger leads: M T I, M T I, M T. Strings 1 3 2, 1 3 2, 1 5.',
+        'Keep your thumb relaxed: it jumps between the 3rd string and the 5th.',
+      ]),
       {
         id: 'roll-medley',
         title: 'Rolling in G',
@@ -325,46 +425,6 @@ export const COURSES: Course[] = [
         ],
       },
       {
-        id: 'slides-hammers',
-        title: 'Slides and hammer-ons',
-        summary: 'Notes the left hand plays by itself.',
-        steps: [
-          {
-            kind: 'info',
-            title: 'Left-hand techniques',
-            body: [
-              'Slide (s): pick the note, then slide the same finger up to the next fret while it rings.',
-              'Hammer-on (h): pick an open string, then bring a finger down hard on a fret so it sounds without picking again.',
-              'We listen for the picked note; the slide or hammer note is yours to make sound good.',
-            ],
-          },
-          {
-            kind: 'play',
-            title: 'Slide 2 to 3',
-            prompt: '3rd string: pick at the 2nd fret, slide to the 3rd.',
-            source: notesTab([
-              { s: 3, f: 2, rh: 'T', lh: 2 },
-              { s: 3, f: 3, rh: 'T', lh: 2, tech: 's' },
-              { s: 2, rh: 'I' },
-              { s: 1, rh: 'M' },
-            ]),
-            mode: 'wait',
-          },
-          {
-            kind: 'play',
-            title: 'Hammer-on',
-            prompt: '3rd string: pick it open, then hammer the 2nd fret.',
-            source: notesTab([
-              { s: 3, rh: 'T' },
-              { s: 3, f: 2, rh: 'T', lh: 2, tech: 'h' },
-              { s: 2, rh: 'I' },
-              { s: 1, rh: 'M' },
-            ]),
-            mode: 'wait',
-          },
-        ],
-      },
-      {
         id: 'first-tune',
         title: 'Boil Them Cabbage Down',
         summary: 'Your first real tune — melody, then rolls.',
@@ -374,6 +434,123 @@ export const COURSES: Course[] = [
           { kind: 'play', title: 'Melody with the band', prompt: 'In time now.', source: { tune: 'boil-cabbage', arrangement: 'melody' }, mode: 'tempo', bpm: 75, backing: true },
           { kind: 'play', title: 'Melody inside rolls', prompt: 'Melody notes are the big ones; the rolls fill in around them.', source: { tune: 'boil-cabbage', arrangement: 'scruggs' }, mode: 'wait' },
           { kind: 'play', title: 'Scruggs style, with the band', prompt: 'Keep the roll going.', source: { tune: 'boil-cabbage', arrangement: 'scruggs' }, mode: 'tempo', bpm: 75, backing: true },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'techniques',
+    title: 'Left-Hand Techniques',
+    subtitle: 'Slides, hammer-ons and pull-offs — the notes that make banjo licks sing.',
+    lessons: [
+      {
+        id: 'slides',
+        title: 'Slides',
+        summary: 'Pick once, slide up: 2–3, 2–4 and 2–5.',
+        steps: [
+          {
+            kind: 'info',
+            title: 'The slide',
+            body: [
+              'Pick a fretted note, then — keeping the finger pressed — slide it up the string to a higher fret while the note rings. You pick once and hear two notes.',
+              'In tab, a slide is marked "s" (2s3 = from the 2nd fret to the 3rd). We listen for the picked note, then follow the pitch to check you arrive.',
+              'Don\'t pick the second note, and don\'t let the pressure off on the way — that\'s what stops the note dying.',
+            ],
+            figure: { type: 'fretboard', notes: [{ string: 3, fret: 2, lh: 2, rh: 'T' }, { string: 3, fret: 3, lh: 2 }], caption: '3rd string: 2nd fret → 3rd fret' },
+          },
+          techDrill('Slide 2 to 3 — 3rd string', 'The classic Scruggs slide: thumb on the 3rd string at the 2nd fret, slide to the 3rd.', [{ s: 3, f: 2, rh: 'T', lh: 2 }, { s: 3, f: 3, rh: 'T', lh: 2, tech: 's' }, { s: 2, rh: 'I' }, { s: 1, rh: 'M' }]),
+          techDrill('Slide 2 to 4 — 4th string', 'Low and bluesy: 4th string, 2nd fret up to the 4th.', [{ s: 4, f: 2, rh: 'T', lh: 2 }, { s: 4, f: 4, rh: 'T', lh: 2, tech: 's' }, { s: 2, rh: 'I' }, { s: 1, rh: 'M' }]),
+          techDrill('Slide 2 to 4 — 3rd string', 'A longer slide on the 3rd string: from A up to B.', [{ s: 3, f: 2, rh: 'T', lh: 1 }, { s: 3, f: 4, rh: 'T', lh: 1, tech: 's' }, { s: 2, rh: 'I' }, { s: 1, rh: 'M' }]),
+          techDrill('Slide 2 to 5 — 1st string', 'Up high: 1st string from the 2nd fret to the 5th (that\'s a G). Middle finger picks.', [{ s: 1, f: 2, rh: 'M', lh: 1 }, { s: 1, f: 5, rh: 'M', lh: 1, tech: 's' }, { s: 5, rh: 'T' }, { s: 2, rh: 'I' }]),
+          {
+            kind: 'play',
+            title: 'Slide inside a roll',
+            prompt: 'Slide 2–3 on the 3rd string, then roll on through. The slide takes an 8th note.',
+            source: notesTab(times(4, [
+              { s: 3, f: 2, rh: 'T', lh: 2, beats: 0.5 }, { s: 3, f: 3, rh: 'T', lh: 2, tech: 's', beats: 0.5 },
+              { s: 2, rh: 'I', beats: 0.5 }, { s: 1, rh: 'M', beats: 0.5 },
+              { s: 5, rh: 'T', beats: 0.5 }, { s: 2, rh: 'I', beats: 0.5 }, { s: 1, rh: 'M', beats: 0.5 }, { s: 5, rh: 'T', beats: 0.5 },
+            ] as SingleNote[])),
+            mode: 'tempo',
+            bpm: 70,
+            backing: true,
+          },
+        ],
+      },
+      {
+        id: 'hammer-ons',
+        title: 'Hammer-ons',
+        summary: 'Sound a note by hammering a finger down.',
+        steps: [
+          {
+            kind: 'info',
+            title: 'The hammer-on',
+            body: [
+              'Pick a string (usually open), then bring a left-hand finger down hard just behind the fret, like a little hammer. The new note sounds without picking again.',
+              'In tab: "h" (0h2 = open, hammer the 2nd fret). Hit with the fingertip, fast and firm — a lazy hammer makes no sound.',
+            ],
+            figure: { type: 'fretboard', notes: [{ string: 3, fret: 0, rh: 'T' }, { string: 3, fret: 2, lh: 2 }], caption: '3rd string: open, hammer the 2nd fret' },
+          },
+          techDrill('Hammer 0 to 2 — 3rd string', 'Pick the open 3rd string with your thumb, then hammer the 2nd fret.', [{ s: 3, rh: 'T' }, { s: 3, f: 2, rh: 'T', lh: 2, tech: 'h' }, { s: 2, rh: 'I' }, { s: 1, rh: 'M' }]),
+          techDrill('Hammer 0 to 2 — 4th string', 'Same on the low 4th string.', [{ s: 4, rh: 'T' }, { s: 4, f: 2, rh: 'T', lh: 2, tech: 'h' }, { s: 2, rh: 'I' }, { s: 1, rh: 'M' }]),
+          techDrill('Hammer 0 to 1 — 2nd string', 'Index picks the open 2nd string; hammer the 1st fret with your index finger (that\'s a C).', [{ s: 2, rh: 'I' }, { s: 2, f: 1, rh: 'I', lh: 1, tech: 'h' }, { s: 1, rh: 'M' }, { s: 5, rh: 'T' }]),
+          {
+            kind: 'play',
+            title: 'Hammer inside a roll',
+            prompt: 'Open 3rd, hammer to the 2nd fret, then roll on.',
+            source: notesTab(times(4, [
+              { s: 3, rh: 'T', beats: 0.5 }, { s: 3, f: 2, rh: 'T', lh: 2, tech: 'h', beats: 0.5 },
+              { s: 2, rh: 'I', beats: 0.5 }, { s: 1, rh: 'M', beats: 0.5 },
+              { s: 5, rh: 'T', beats: 0.5 }, { s: 2, rh: 'I', beats: 0.5 }, { s: 1, rh: 'M', beats: 0.5 }, { s: 5, rh: 'T', beats: 0.5 },
+            ] as SingleNote[])),
+            mode: 'tempo',
+            bpm: 70,
+            backing: true,
+          },
+        ],
+      },
+      {
+        id: 'pull-offs',
+        title: 'Pull-offs',
+        summary: 'Flick a finger off the string to sound the note below.',
+        steps: [
+          {
+            kind: 'info',
+            title: 'The pull-off',
+            body: [
+              'The opposite of a hammer-on. Pick a fretted note, then pull the finger off the string with a slight sideways flick — almost plucking it — so the lower note (often the open string) sounds.',
+              'In tab: "p" (2p0 = 2nd fret, pull off to open). Lifting straight up gives a weak note: flick toward the floor.',
+            ],
+            figure: { type: 'fretboard', notes: [{ string: 1, fret: 2, lh: 2, rh: 'M' }, { string: 1, fret: 0 }], caption: '1st string: 2nd fret, pull off to open' },
+          },
+          techDrill('Pull 2 to 0 — 1st string', 'Middle finger picks the 1st string at the 2nd fret; pull off to the open string.', [{ s: 1, f: 2, rh: 'M', lh: 2 }, { s: 1, f: 0, rh: 'M', tech: 'p' }, { s: 5, rh: 'T' }, { s: 2, rh: 'I' }]),
+          techDrill('Pull 2 to 0 — 3rd string', 'Thumb on the 3rd string, 2nd fret; pull off to open G.', [{ s: 3, f: 2, rh: 'T', lh: 2 }, { s: 3, f: 0, rh: 'T', tech: 'p' }, { s: 2, rh: 'I' }, { s: 1, rh: 'M' }]),
+          techDrill('Pull 1 to 0 — 2nd string', 'Index on the 2nd string, 1st fret; pull off to open B.', [{ s: 2, f: 1, rh: 'I', lh: 1 }, { s: 2, f: 0, rh: 'I', tech: 'p' }, { s: 1, rh: 'M' }, { s: 5, rh: 'T' }]),
+          {
+            kind: 'play',
+            title: 'Pull-off inside a roll',
+            prompt: '3rd string 2 to open, then roll on.',
+            source: notesTab(times(4, [
+              { s: 3, f: 2, rh: 'T', lh: 2, beats: 0.5 }, { s: 3, f: 0, rh: 'T', tech: 'p', beats: 0.5 },
+              { s: 2, rh: 'I', beats: 0.5 }, { s: 1, rh: 'M', beats: 0.5 },
+              { s: 5, rh: 'T', beats: 0.5 }, { s: 2, rh: 'I', beats: 0.5 }, { s: 1, rh: 'M', beats: 0.5 }, { s: 5, rh: 'T', beats: 0.5 },
+            ] as SingleNote[])),
+            mode: 'tempo',
+            bpm: 70,
+            backing: true,
+          },
+        ],
+      },
+      {
+        id: 'licks',
+        title: 'Licks',
+        summary: 'Slides, hammers and pulls together in rolls.',
+        steps: [
+          { kind: 'info', title: 'Licks', body: ['A lick is a short phrase players reuse everywhere. Most Scruggs licks are a roll with a slide, hammer-on or pull-off in it. Here are two.'] },
+          { kind: 'play', title: 'Slide-and-hammer lick', prompt: 'Slide 2–3 on the 3rd string, roll, then hammer the 4th string 0–2.', source: notesTab(SLIDE_HAMMER_LICK), mode: 'wait' },
+          { kind: 'play', title: 'Slide-and-hammer lick, in time', prompt: 'The left-hand notes are yours to make sound good.', source: notesTab(times(2, SLIDE_HAMMER_LICK)), mode: 'tempo', bpm: 70, backing: true },
+          { kind: 'play', title: 'Pull-off lick', prompt: 'Pull off on the 1st string, then the 3rd.', source: notesTab(PULL_LICK), mode: 'wait' },
+          { kind: 'play', title: 'Pull-off lick, in time', prompt: 'Keep the roll even.', source: notesTab(times(2, PULL_LICK)), mode: 'tempo', bpm: 70, backing: true },
         ],
       },
     ],

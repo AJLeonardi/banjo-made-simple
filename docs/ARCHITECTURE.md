@@ -40,7 +40,11 @@ sounding, so "what pitches are in the spectrum" isn't "what did you just play". 
 5. The judge asks "is the expected note among the heard notes?" — so playing the open 4th string
    (D3) when the 1st (D4) was asked is *wrong*, even though D3's overtone is D4.
 
-Hammer-ons / pull-offs / slides have no pick attack; they are shown, and only the picked note is judged.
+Hammer-ons / pull-offs / slides have no pick attack. In wait (Learn) mode they're judged by
+following the pitch: after the starting note is picked, the tuner's pitch estimate (120 ms
+window) is polled until it reaches the target fret; a hammer or pull-off strong enough to fire
+an onset on the target pitch also counts. If it doesn't arrive within 2.5 s, that's a wrong
+try and the cursor goes back to the starting note. In tempo mode they're shown only.
 
 ### What you touched (feedback)
 * Pick: the heard pitch is mapped to the fretboard position nearest the expected one (same

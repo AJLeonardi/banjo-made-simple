@@ -125,14 +125,7 @@ export function LessonScreen({ id, go }: { id: string; go: Nav }) {
         </section>
       )}
 
-      {step.kind === 'tuner' && (
-        <section className="stack">
-          <h2 className="step-title display">{step.title}</h2>
-          <p>Tune each string to g D G B D (5th to 1st). Your banjo needs to be in tune for the app to hear you right.</p>
-          <Tuner onTuned={() => update((p) => bump(p, 'tuner'))} />
-          <button className="btn primary block" onClick={advance}>I'm in tune</button>
-        </section>
-      )}
+      {step.kind === 'tuner' && <TunerStep key={i} title={step.title} guided={!!step.guided} onTuned={() => update((p) => bump(p, 'tuner'))} onNext={advance} />}
 
       {step.kind === 'play' && <PlayStep key={`${i}:${attempt}`} step={step} result={result} onDone={onPlayDone} onRetry={() => { setResult(null); setAttempt((a) => a + 1); }} onNext={advance} />}
 
@@ -148,6 +141,25 @@ export function LessonScreen({ id, go }: { id: string; go: Nav }) {
         <TradeStep key={`${i}:${attempt}`} step={step} onDone={onPlayDone} />
       ))}
     </div>
+  );
+}
+
+function TunerStep({ title, guided, onTuned, onNext }: { title: string; guided: boolean; onTuned: () => void; onNext: () => void }) {
+  const [complete, setComplete] = useState(false);
+  return (
+    <section className="stack">
+      <h2 className="step-title display">{title}</h2>
+      <p>{guided ? "We'll go string by string: 4th, 3rd, 2nd, 1st, then the short 5th. Pick the string, let it ring, and turn its peg until the needle sits in the green." : 'Tune each string to g D G B D (5th to 1st).'}</p>
+      <Tuner guided={guided} onTuned={onTuned} onComplete={() => setComplete(true)} />
+      <button className="btn primary block" disabled={guided && !complete} onClick={onNext}>
+        {guided && !complete ? 'Tune all five strings to continue' : 'Continue'}
+      </button>
+      {guided && !complete && (
+        <button className="btn ghost block" onClick={onNext}>
+          Skip for now
+        </button>
+      )}
+    </section>
   );
 }
 

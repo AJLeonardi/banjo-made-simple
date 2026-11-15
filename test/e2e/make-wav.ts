@@ -1,14 +1,21 @@
 // Renders a synthesized banjo performance to a 16-bit WAV, for use as Chromium's fake mic.
 // Usage: npx vite-node test/e2e/make-wav.ts <out.wav> <spec>
-//   spec: comma list of "time:midi[+midi]" e.g. "2.0:62,3.0:67,4.0:50"
+//   spec: comma list of "time:midi[+midi][>midi@time]" e.g. "2.0:62,3.0:57>58@3.4"
+//   (">58@3.4" = slide/hammer/pull to 58 at 3.4 s, without a new pick)
 import { writeFileSync } from 'node:fs';
 import { N, render } from '../render';
 import { SR } from '../synth';
 
 const [out, spec] = process.argv.slice(2);
 const notes: N[] = spec.split(',').map((x) => {
-  const [t, m] = x.split(':');
-  return { t: Number(t), midi: m.split('+').map(Number) };
+  const [t, rest] = x.split(':');
+  const [m, bend] = rest.split('>');
+  const n: N = { t: Number(t), midi: m.split('+').map(Number) };
+  if (bend) {
+    const [to, at] = bend.split('@');
+    n.bend = { midi: Number(to), at: Number(at) };
+  }
+  return n;
 });
 const dur = Math.max(...notes.map((n) => n.t)) + 2;
 const buf = render(notes, dur, { seed: 4 });

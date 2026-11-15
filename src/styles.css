@@ -310,7 +310,7 @@ input[type='range'] { width: 100%; accent-color: var(--accent); }
 .tuner-note { font-family: 'Rye', serif; font-size: 64px; line-height: 1; }
 .tuner-gauge { position: relative; width: 100%; max-width: 360px; height: 56px; }
 .tuner-gauge .scale { position: absolute; left: 0; right: 0; top: 26px; height: 4px; background: var(--surface-2); border-radius: 2px; }
-.tuner-gauge .zone { position: absolute; top: 18px; height: 20px; left: calc(50% - 6%); width: 12%; background: var(--good-soft); border-radius: 6px; }
+.tuner-gauge .zone { position: absolute; top: 18px; height: 20px; left: calc(50% - 2.5%); width: 5%; background: var(--good-soft); border-radius: 6px; }
 .tuner-gauge .needle { position: absolute; top: 8px; width: 4px; height: 40px; margin-left: -2px; border-radius: 2px; background: var(--accent); transition: left 0.12s; }
 .tuner-gauge .needle.ok { background: var(--good); }
 

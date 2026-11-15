@@ -16,6 +16,10 @@ export const ROLLS = {
   backward: [[1, 'M'], [2, 'I'], [5, 'T'], [1, 'M'], [2, 'I'], [5, 'T'], [1, 'M'], [2, 'I']] as RollStep[],
   /** T I M T M I T M (strings 3 2 1 5 1 2 3 1). */
   forwardReverse: [[3, 'T'], [2, 'I'], [1, 'M'], [5, 'T'], [1, 'M'], [2, 'I'], [3, 'T'], [1, 'M']] as RollStep[],
+  /** I M T I M T I M (strings 2 1 5 2 1 5 2 1). */
+  indexLeading: [[2, 'I'], [1, 'M'], [5, 'T'], [2, 'I'], [1, 'M'], [5, 'T'], [2, 'I'], [1, 'M']] as RollStep[],
+  /** M T I M T I M T (strings 1 3 2 1 3 2 1 5). */
+  middleLeading: [[1, 'M'], [3, 'T'], [2, 'I'], [1, 'M'], [3, 'T'], [2, 'I'], [1, 'M'], [5, 'T']] as RollStep[],
   /** Thumb then pinch: T3, pinch T5+M1 (bum-pinch), twice per bar as quarter notes. */
   bumPinch: [[3, 'T'], [5, 'T', 1, 'M'], [4, 'T'], [5, 'T', 1, 'M']] as RollStep[],
 };
@@ -91,6 +95,9 @@ export function vampTab(bars: { chord: string; frets: Frets }[], beatsPerBar = 4
   });
   return { beatsPerBar, bars: bars.length, chords: bars.map((b) => b.chord), events, parts: [{ name: 'A', startBar: 0, bars: bars.length }] };
 }
+
+/** Repeat a list of notes n times (for drills). */
+export const times = <T,>(n: number, xs: T[]): T[] => Array.from({ length: n }, () => xs).flat();
 
 /** Closed vamp shapes used in the backup course. */
 export const VAMP = {

@@ -28,6 +28,8 @@ export const AWARDS: Award[] = [
   { id: 'course-rolls', title: 'Roll Call', description: 'Finish the Rolls course.', icon: 'course', tier: 'silver', earned: (p) => courseDone(p, 'rolls') },
   { id: 'first-tune', title: 'First Tune', description: 'Play your first tune all the way through.', icon: 'note', tier: 'bronze', earned: (p) => tunesWithStars(p) >= 1 || done(p, 'first-tune') },
   { id: 'course-left-hand', title: 'Fret Setter', description: 'Finish the Left Hand course.', icon: 'course', tier: 'silver', earned: (p) => courseDone(p, 'left-hand') },
+  { id: 'course-techniques', title: 'Smooth Moves', description: 'Finish Left-Hand Techniques.', icon: 'course', tier: 'silver', earned: (p) => courseDone(p, 'techniques') },
+  { id: 'tuned-up', title: 'Perfect Pitch', description: 'Get five strings in tune with the tuner.', icon: 'tuner', tier: 'bronze', earned: (p) => p.counters.tuner >= 5 },
   { id: 'chop-100', title: 'Chop Shop', description: 'Land 100 vamp chops.', icon: 'chop', tier: 'silver', earned: (p) => p.counters.chops >= 100 },
   { id: 'course-backup', title: 'Rhythm Section', description: 'Finish the Backup course.', icon: 'course', tier: 'gold', earned: (p) => courseDone(p, 'backup') },
   { id: 'first-trade', title: 'Taking a Break', description: 'Trade breaks with the band for the first time.', icon: 'trade', tier: 'silver', earned: (p) => p.counters.trades >= 1 },

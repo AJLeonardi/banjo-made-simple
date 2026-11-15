@@ -24,6 +24,17 @@ describe('tuner', () => {
         }
   });
 
+  it('follows a slide: a short window after the slide reads the new fret', async () => {
+    const { render } = await import('./render');
+    for (const [from, to] of [[57, 58], [57, 59], [57, 60], [52, 54], [64, 67], [55, 57], [57, 55], [64, 62]]) {
+      const buf = render([{ t: 0.2, midi: [from], bend: { midi: to, at: 0.45 } }], 1.0);
+      const before = estimatePitch(buf.subarray(0, Math.round(SR * 0.42)), SR, 0.12)!;
+      const after = estimatePitch(buf.subarray(0, Math.round(SR * 0.62)), SR, 0.12)!;
+      expect(before.midi, `${from}→${to} before`).toBe(from);
+      expect(after.midi, `${from}→${to} after`).toBe(to);
+    }
+  });
+
   it('says nothing in silence', () => {
     expect(estimatePitch(new Float32Array(SR * 0.4), SR)).toBeNull();
   });

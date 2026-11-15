@@ -4,8 +4,11 @@ Learn 5-string banjo the way the Simply apps teach piano and guitar: play your r
 the app listens through the microphone, tells you if you're right, and shows you where your
 fingers go. A web app (installable PWA) for phones, tablets and computers.
 
-- **Learning path** — 5 courses, 23 lessons: from never having held a banjo → the picking
-  hand → rolls → the left hand and chords → backup (vamping) → tunes and trading breaks.
+- **Learning path** — 6 courses, 29 lessons: from never having held a banjo → tuning (guided,
+  string by string, plus tuning by ear) → the picking hand → every roll pattern in its own
+  lesson (alternating thumb, forward, backward, forward-reverse, index-leading,
+  middle-leading) → the left hand and chords → left-hand techniques (slides 2–3, 2–4, 2–5;
+  hammer-ons; pull-offs; licks) → backup (vamping) → tunes and trading breaks.
 - **It listens** — two detectors run at once:
   - *single-note picking* (rolls, melody, pinches), new in this app;
   - *multi-string vamping/strumming* (chords), from banjo-flash-cards.
@@ -74,7 +77,9 @@ chromium --use-fake-ui-for-media-stream --use-fake-device-for-media-stream \
   mics** — turn on *Me → Show what the detectors hear* and record what it reports.
 - The mic hears pitch, not fingers: the same note on another string (e.g. B on the open 2nd vs.
   the 3rd string 4th fret) can't be told apart, so the app shows the most likely place.
-- Hammer-ons, pull-offs and slides are shown but not judged.
+- Hammer-ons, pull-offs and slides are judged in Learn mode (the app follows the pitch of the
+  ringing string after you pick the starting note). Playing along in time, they're shown but
+  not scored — a quick slide inside a roll is too short to check reliably yet.
 - Through a speaker the band is deliberately light (soft bass under the mic's range, a high
   brushed rhythm); headphones give the full band and are needed to check chords while the
   app's banjo plays.

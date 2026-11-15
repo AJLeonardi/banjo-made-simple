@@ -39,17 +39,49 @@ describe('wait mode', () => {
     expect(q.pick(1.4, [G3]).result).toBe('ignored');
   });
 
+  it('judges a slide by following the pitch, and asks again when it does not arrive', () => {
+    const p = new Performance(notesTab([{ s: 3, f: 2, rh: 'T' }, { s: 3, f: 4, rh: 'T', tech: 's' }, { s: 2, rh: 'I' }]), { mode: 'wait', secPerBeat: 0.5 });
+    const A3 = G3 + 2, B3s = G3 + 4;
+    expect(p.pick(1, [A3]).result).toBe('hit');
+    expect(p.current!.tech).toBe('s');
+    expect(p.pitch(1.2, A3).result).toBe('ignored'); // still on fret 2
+    expect(p.pitch(1.5, B3s).result).toBe('hit'); // slid to 4
+    expect(p.current!.pitches).toEqual([B3]);
+    // Second try: the slide never gets there → back to the starting note.
+    const q = new Performance(notesTab([{ s: 3, f: 2, rh: 'T' }, { s: 3, f: 4, rh: 'T', tech: 's' }]), { mode: 'wait', secPerBeat: 0.5 });
+    q.pick(1, [A3]);
+    expect(q.pitch(4, A3).result).toBe('wrong');
+    expect(q.current!.pitches).toEqual([A3]);
+    expect(q.targets[1].attempts).toBe(1);
+    q.pick(5, [A3]);
+    expect(q.pitch(5.3, B3s).result).toBe('hit');
+    expect(q.done).toBe(true);
+  });
+
+  it('a hammer-on or pull-off onset on the target pitch counts; re-picking the start restarts the clock', () => {
+    const p = new Performance(notesTab([{ s: 3, rh: 'T' }, { s: 3, f: 2, rh: 'T', tech: 'h' }]), { mode: 'wait', secPerBeat: 0.5 });
+    p.pick(1, [G3]);
+    expect(p.pick(3.0, [G3]).result).toBe('ignored'); // picked open again
+    expect(p.pitch(4.0, G3).result).toBe('ignored'); // within 2.5 s of the re-pick
+    expect(p.pick(4.2, [G3 + 2]).result).toBe('hit'); // the hammer
+  });
+
+  it('technique notes are shown but not judged in tempo mode', () => {
+    const p = new Performance(notesTab([{ s: 3, f: 2, rh: 'T' }, { s: 3, f: 4, rh: 'T', tech: 's' }]), { mode: 'tempo', secPerBeat: 0.5 });
+    expect(p.targets[1].judged).toBe(false);
+  });
+
   it('a pinch needs both notes; one of them is partial', () => {
     const p = new Performance(notesTab([{ s: 5, rh: 'T', with: { s: 1, rh: 'M' } }]), { mode: 'wait', secPerBeat: 0.5 });
     expect(p.pick(0, [G4]).result).toBe('partial');
     expect(p.pick(1, [D4, G4]).result).toBe('hit');
   });
 
-  it('skips technique notes (slide, hammer-on) automatically', () => {
+  it('waits for a technique note after its starting note', () => {
     const p = new Performance(notesTab([{ s: 3, f: 2, rh: 'T' }, { s: 3, f: 3, rh: 'T', tech: 's' }, { s: 2, rh: 'I' }]), { mode: 'wait', secPerBeat: 0.5 });
     p.pick(0, [G3 + 2]);
-    expect(p.current!.pitches).toEqual([B3]);
-    expect(p.targets[1].outcome).toBe('skip');
+    expect(p.current!.tech).toBe('s');
+    expect(p.current!.pitches).toEqual([G3 + 3]);
   });
 
   it('chord targets ignore picks, and only a final wrong check counts', () => {
