@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "voice": "vite-node scripts/voice/export.ts > scripts/voice/narration.jsonl && python3 scripts/voice/generate.py scripts/voice/narration.jsonl"
   },
   "dependencies": {
     "firebase": "10.14.1",

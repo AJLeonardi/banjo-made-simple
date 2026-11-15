@@ -25,7 +25,17 @@ export default defineConfig(({ command, mode }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
-      workbox: { maximumFileSizeToCacheInBytes: 4 * 1024 * 1024 },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // Narration clips: cached as they're first played, so lessons work offline after.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/voice/') && url.pathname.endsWith('.mp3'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'narration', expiration: { maxEntries: 400 }, rangeRequests: true },
+          },
+        ],
+      },
       manifest: {
         name: 'Banjo Made Simple',
         short_name: 'Banjo Simple',

@@ -86,11 +86,14 @@ export function Profile({ go }: { go: Nav }) {
           <button className="btn" onClick={() => go({ name: 'calibrate' })}><MicIcon /> Timing calibration</button>
         </div>
         <label className="row small">
+          <input type="checkbox" checked={settings.voice} onChange={(e) => setSettings({ voice: e.target.checked })} /> Voice narration in lessons
+        </label>
+        <label className="row small">
           <input type="checkbox" checked={settings.debug} onChange={(e) => setSettings({ debug: e.target.checked })} /> Show what the detectors hear (debug)
         </label>
       </section>
 
-      <p className="tiny muted center">Banjo Made Simple {__APP_VERSION__}. Everything you play is analysed on this device; no audio is uploaded.</p>
+      <p className="tiny muted center">Banjo Made Simple {__APP_VERSION__}. Everything you play is analysed on this device; no audio is uploaded. Narration voice: Kokoro-82M (Apache 2.0).</p>
     </div>
   );
 }

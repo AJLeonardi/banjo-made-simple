@@ -7,7 +7,9 @@ import { useStore } from '../../state/store';
 import { Stars } from '../bits';
 import { useMicScope } from '../EngineContext';
 import { Figure } from '../Figures';
-import { CloseIcon, HeadphonesIcon, NoteIcon, PlayIcon, RepeatIcon } from '../Icons';
+import { CloseIcon, HeadphonesIcon, NoteIcon, PlayIcon, RepeatIcon, SpeakerIcon, SpeakerOffIcon, StopIcon } from '../Icons';
+import { narrationFor } from '../../content/narration';
+import { useNarration } from '../narrator';
 import type { Nav } from '../nav';
 import { Player, PlayResult } from '../Player';
 import { recordRun } from '../record';
@@ -23,13 +25,17 @@ const scored = (s: Step) => s.kind === 'play' || s.kind === 'trade';
 export function LessonScreen({ id, go }: { id: string; go: Nav }) {
   useMicScope();
   const lesson = LESSON_BY_ID[id];
-  const { progress, update } = useStore();
+  const { progress, update, settings, setSettings } = useStore();
   const [i, setI] = useState(0);
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<PlayResult | null>(null);
   const [best, setBest] = useState<Record<number, number>>({});
   const [finished, setFinished] = useState<number | null>(null);
   const before = useRef(new Set(TUNES.filter((t) => tuneUnlocked(progress, t)).map((t) => t.id)));
+  const curStep = lesson?.steps[i];
+  // Speak the step — but not over results, and not after the lesson is done.
+  const voiceText = curStep && !result && finished === null ? narrationFor(curStep) : null;
+  const voice = useNarration(voiceText, settings.voice, settings.volume);
 
   if (!lesson || !lessonUnlocked(progress, id)) {
     return (
@@ -110,6 +116,14 @@ export function LessonScreen({ id, go }: { id: string; go: Nav }) {
             <span key={k} className={k < i ? 'done' : k === i ? 'now' : ''} />
           ))}
         </div>
+        {settings.voice && voiceText && (
+          <button className={`iconbtn${voice.blocked ? ' pulse' : ''}`} onClick={voice.playing ? voice.stop : voice.replay} aria-label={voice.playing ? 'Stop the voice' : 'Hear this step'}>
+            {voice.playing ? <StopIcon /> : <RepeatIcon />}
+          </button>
+        )}
+        <button className="iconbtn" onClick={() => setSettings({ voice: !settings.voice })} aria-label={settings.voice ? 'Turn the voice off' : 'Turn the voice on'} aria-pressed={settings.voice}>
+          {settings.voice ? <SpeakerIcon /> : <SpeakerOffIcon />}
+        </button>
       </div>
 
       {step.kind === 'info' && (

@@ -20,7 +20,10 @@ fingers go. A web app (installable PWA) for phones, tablets and computers.
   band backs you, then the app's banjo takes a break while you vamp behind it.
 - **25 public-domain tunes to earn** (from lessons and star totals), each with Melody,
   Scruggs-roll and Backup arrangements generated from a melody skeleton.
-- **Stars, awards (25), streaks, daily goal, daily workout.**
+- **A voice walks you through every lesson step** (pre-generated with the open-source Kokoro
+  neural voice, Apache 2.0; replay and on/off in the lesson bar; it stops when you start
+  playing so the mic doesn't hear it).
+- **Stars, awards, streaks, daily goal, daily workout.**
 - **Google sign-in** (Firebase) keeps progress across devices; without it, guest mode saves on
   the device. Guest progress is merged into the account on first sign-in.
 
@@ -35,6 +38,20 @@ npm run dev         # http://localhost:5173
 npm run dev:https   # https://<LAN-IP>:5173 — phones only allow the mic over https
 npm run build
 ```
+
+### Narration
+
+Lesson narration clips live in `public/voice/` (one MP3 per step, named by a hash of its text).
+After editing lesson text, regenerate — only changed clips are rebuilt, and `npm test` fails if
+a clip is missing:
+
+```sh
+pip install kokoro-onnx soundfile   # once; also needs ffmpeg
+npm run voice                       # downloads the voice model (~350 MB) on first run
+```
+
+How text is turned into speech (finger letters, tab shorthand like 2s3) is in
+`src/content/narration.ts`.
 
 ### Google sign-in (optional)
 

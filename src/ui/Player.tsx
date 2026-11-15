@@ -19,6 +19,7 @@ import { Fretboard, Ghost, instruction, Mark } from './Fretboard';
 import { Highway } from './Highway';
 import { EarIcon, MicIcon, PlayIcon, StopIcon } from './Icons';
 import { MicStatus } from './MicStatus';
+import { stopNarration } from './narrator';
 
 export interface PlayResult {
   mode: 'wait' | 'tempo';
@@ -188,6 +189,7 @@ export function Player(props: PlayerProps) {
 
   // ---- run ------------------------------------------------------------------------
   const run = useCallback(async () => {
+    stopNarration(); // the mic must not hear the voice
     const eng = await startMic();
     if (!eng) return;
     cleanup.current();
@@ -271,6 +273,7 @@ export function Player(props: PlayerProps) {
 
   /** Listen: the app plays the part (with the band) while the tab scrolls. */
   const demo = useCallback(async () => {
+    stopNarration();
     const eng = await startMic();
     if (!eng) return;
     cleanup.current();

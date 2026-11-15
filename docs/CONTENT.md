@@ -34,3 +34,9 @@ Only add tunes that are public domain (traditional, or published before 1929 in 
 Lessons are lists of steps: `info` (text + figure), `tuner`, `play` (a tab or a tune
 arrangement, in `wait` or `tempo` mode) and `trade`. Exercise tabs are built with the helpers in
 `src/content/exercises.ts` (`rollTab`, `notesTab`, `chordTab`, `vampTab`).
+
+## Narration
+
+Every lesson step is spoken. The spoken text comes from the step's title and text
+(`src/content/narration.ts` rewrites things like "T I M" or "2s3" so they sound right).
+After changing any lesson text run `npm run voice`; `npm test` checks every step has its clip.

@@ -75,6 +75,12 @@ export const SpeakerIcon = (p: P) => (
     <path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" />
   </svg>
 );
+export const SpeakerOffIcon = (p: P) => (
+  <svg {...base} {...p} aria-hidden>
+    <path d="M11 5 6 9H2v6h4l5 4z" />
+    <path d="M22 9l-6 6M16 9l6 6" />
+  </svg>
+);
 export const CloseIcon = (p: P) => (
   <svg {...base} {...p} aria-hidden>
     <path d="M18 6 6 18M6 6l12 12" />

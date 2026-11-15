@@ -12,6 +12,8 @@ export interface Settings {
   volume: number;
   /** Show the debug readout (what the detectors hear). */
   debug: boolean;
+  /** Spoken narration in lessons. */
+  voice: boolean;
   /** Finished the first-run onboarding on this device. */
   onboarded: boolean;
 }
@@ -22,6 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
   latencyMs: 0,
   volume: 0.8,
   debug: false,
+  voice: true,
   onboarded: false,
 };
 
