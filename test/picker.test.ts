@@ -110,6 +110,34 @@ describe('pick detector', () => {
     expect(ev.length).toBe(1);
   });
 
+  // Speaker-mode backing: sine bass E1–B2 with a 30 ms attack, on beats 1 and 3.
+  function addBass(buf: Float32Array, start: number, beat: number, midis: number[], gain = 0.3) {
+    midis.forEach((m, i) => {
+      const f = 440 * 2 ** ((m - 69) / 12);
+      const t0 = Math.round(SR * (start + i * 2 * beat));
+      const len = Math.round(SR * beat * 1.6);
+      for (let k = 0; k < len && t0 + k < buf.length; k++) {
+        const t = k / SR;
+        const env = Math.min(1, t / 0.03) * Math.exp(-t * 2);
+        buf[t0 + k] += gain * env * Math.sin(2 * Math.PI * f * t);
+      }
+    });
+  }
+
+  it('speaker-mode bass alone is never heard as a picked note', () => {
+    const buf = new Float32Array(SR * 4);
+    addBass(buf, 0.3, 0.5, [43, 38, 36, 31, 38, 33, 43, 38]); // G2 D2 C2 G1 D2 A1 …
+    addNoise(buf, 0.002);
+    expect(detect(buf)).toEqual([]);
+  });
+
+  it('a roll is still read correctly with the speaker-mode bass underneath', () => {
+    const notes = forwardRoll({ 1: 0, 2: 0, 3: 0, 4: 0 }, 2, 0.3, 0.25);
+    const buf = render(notes, 0.3 + notes.length * 0.25 + 0.3, { seed: 9 });
+    addBass(buf, 0.3, 0.5, [43, 38, 43, 38]);
+    expect(score(notes, detect(buf))).toEqual([]);
+  });
+
   it('ignores silence and quiet noise', () => {
     const buf = new Float32Array(SR);
     addNoise(buf, 0.004);

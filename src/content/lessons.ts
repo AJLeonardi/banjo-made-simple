@@ -453,7 +453,7 @@ export const COURSES: Course[] = [
       tuneLesson('tune-cripple-creek', 'cripple-creek', 'Cripple Creek', ['A rolling tune with a high B part — a favourite first tune at jams.'], 85),
       tuneLesson('tune-cumberland-gap', 'cumberland-gap', 'Cumberland Gap', ['A driving tune named for the mountain pass.'], 85),
       tuneLesson('tune-circle', 'circle-unbroken', 'Will the Circle Be Unbroken', ['The gospel song that closes every jam. One long part.'], 85, false),
-      tuneLesson('tune-old-joe-clark', 'old-joe-clark', 'Old Joe Clark', ['A mountain tune with an F chord — that\'s the "modal" sound. F: middle on the 4th string 3rd fret, index on the 2nd 1st fret, ring on the 3rd 2nd fret, pinky on the 1st 3rd fret.'], 90),
+      tuneLesson('tune-old-joe-clark', 'old-joe-clark', 'Old Joe Clark', ['A mountain tune with an F chord — that\'s the old "modal" sound.', 'The F shape: index on the 2nd string 1st fret, middle on the 3rd string 2nd fret, ring on the 4th string 3rd fret, pinky on the 1st string 3rd fret. The fretboard will show you.'], 90),
       tuneLesson('tune-soldiers-joy', 'soldiers-joy', "Soldier's Joy", ['One of the oldest fiddle tunes still played. The A part starts low on the 4th string.'], 90),
     ],
   },

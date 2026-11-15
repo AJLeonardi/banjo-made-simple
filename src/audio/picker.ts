@@ -46,6 +46,10 @@ const LOW_REGISTER = 57;
 const DELTA_FLOOR = 0.08;
 /** A bin counts as "present" for the octave checks above this. */
 const PRESENT = 0.1;
+/** Absolute floor for in-range tonal energy (amplitude) to count at all. */
+const MIN_LEVEL = 0.002;
+/** In-range peak must be at least this × the after-window RMS (a banjo note alone is ~1.4×). */
+const IN_RANGE_SHARE = 0.25;
 /** A pinch partner needs this fraction of the main note's salience. */
 const SECOND_NOTE = 0.3;
 
@@ -223,9 +227,12 @@ export function analyzePick(samples: Float32Array, onset: number, sampleRate: nu
   for (let i = a0; i < a1; i++) rms += samples[i] * samples[i];
   rms = a1 > a0 ? Math.sqrt(rms / (a1 - a0)) : 0;
 
-    const amax = Math.max(...after) || 1;
+  const amax = Math.max(...after) || 1;
   const fresh = max / amax;
-  if (max <= 0) return { delta, heard: [], strength: 0, rms, fresh };
+  // What's sounding in banjo range must be a real share of everything sounding (and above
+  // the noise). Otherwise normalising would blow up leakage — e.g. the speaker-mode bass
+  // skirting into the lowest bins — into a "note".
+  if (max <= 0 || amax < Math.max(MIN_LEVEL, IN_RANGE_SHARE * rms)) return { delta: delta.fill(0), heard: [], strength: 0, rms, fresh };
   for (let i = 0; i < BINS; i++) {
     delta[i] /= max;
     if (delta[i] < DELTA_FLOOR) delta[i] = 0;
