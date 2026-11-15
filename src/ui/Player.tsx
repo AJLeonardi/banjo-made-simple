@@ -354,30 +354,36 @@ export function Player(props: PlayerProps) {
   const curChord = shownTarget?.kind === 'chord' ? shownTarget.chord : null;
 
   return (
-    <div className="player">
-      {prompt && <p className="muted">{prompt}</p>}
-      <div className="highway-wrap">
+    <div className={`player${running || phase === 'finishing' || phase === 'demo' ? ' running' : ''}`}>
+      {prompt && <p className="muted player-prompt">{prompt}</p>}
+      <div className="highway-wrap player-main">
         <Highway tab={tab} targets={running || phase === 'finishing' ? perf.targets : undefined} position={position} currentIndex={mode === 'wait' && running ? perf.current?.index ?? null : null} pxPerBeat={mode === 'wait' ? 96 : 84} />
         {countdown !== null && <div className="countin" aria-live="polite">{countdown}</div>}
       </div>
 
-      <div className={`feedback ${msgClass}`} aria-live="polite">
-        {message || (curChord && running ? '' : ' ')}
-      </div>
-      {curChord && (
-        <div className="chord-callout">
-          <span className="name">{curChord}</span>
-          <span className="muted small">{shownTarget?.event.style === 'chop' ? 'chop — strum, then relax your hand' : 'strum'}</span>
+      <div className="player-status">
+        <div className={`feedback ${msgClass}`} aria-live="polite">
+          {message || (curChord && running ? '' : ' ')}
         </div>
-      )}
-
-      <Fretboard targets={targetMarks} ghosts={ghosts} />
-      <div className="legend" aria-hidden>
-        <span><i style={{ background: 'var(--rh-t)' }} />Thumb</span>
-        <span><i style={{ background: 'var(--rh-i)' }} />Index</span>
-        <span><i style={{ background: 'var(--rh-m)' }} />Middle</span>
-        <span><i style={{ background: 'var(--brass)' }} />Fret here (finger number)</span>
+        {curChord && (
+          <div className="chord-callout">
+            <span className="name">{curChord}</span>
+            <span className="muted small">{shownTarget?.event.style === 'chop' ? 'chop — strum, then relax your hand' : 'strum'}</span>
+          </div>
+        )}
       </div>
+
+      <div className="player-board">
+        <Fretboard targets={targetMarks} ghosts={ghosts} />
+        <div className="legend" aria-hidden>
+          <span><i style={{ background: 'var(--rh-t)' }} />Thumb</span>
+          <span><i style={{ background: 'var(--rh-i)' }} />Index</span>
+          <span><i style={{ background: 'var(--rh-m)' }} />Middle</span>
+          <span><i style={{ background: 'var(--brass)' }} />Fret here (finger number)</span>
+        </div>
+      </div>
+
+      <div className="player-controls">
 
       {mode === 'wait' && running && shownTarget?.tech && <div className="hint">{techHint(shownTarget, perf)}</div>}
       {hint && mode === 'wait' && running && shownTarget && !shownTarget.tech && <div className="hint">{shownTarget.kind === 'chord' ? `Make the ${shownTarget.chord} shape shown on the fretboard, then strum.` : instruction(targetMarks)}</div>}
@@ -412,6 +418,7 @@ export function Player(props: PlayerProps) {
             <StopIcon /> {mode === 'wait' ? 'Finish' : 'Stop'}
           </button>
         )}
+      </div>
       </div>
     </div>
   );

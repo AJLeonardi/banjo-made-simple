@@ -322,6 +322,72 @@ input[type='range'] { width: 100%; accent-color: var(--accent); }
 @media (min-width: 700px) {
   .highway-wrap canvas { height: 220px; }
 }
+.player-status, .player-board, .player-controls { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.player .fretboard { max-width: 640px; margin: 0 auto; width: 100%; }
+
+/* Tablets and computers: wider page; tab across the top, fretboard and controls side by side. */
+@media (min-width: 1000px) {
+  .page.full { max-width: 1120px; }
+  .player {
+    display: grid; gap: 12px 20px; align-items: start;
+    grid-template-columns: 3fr 2fr;
+    grid-template-areas: 'prompt prompt' 'main main' 'board status' 'board controls';
+  }
+  .player-prompt { grid-area: prompt; }
+  .player-main { grid-area: main; }
+  .player-board { grid-area: board; }
+  .player-status { grid-area: status; }
+  .player-controls { grid-area: controls; }
+  .highway-wrap canvas { height: 240px; }
+}
+
+/* Phones held sideways: while playing, the player takes the whole screen in two columns —
+   the tab on the left, the fretboard, feedback and buttons on the right. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .player {
+    display: grid; gap: 8px 14px; align-items: start;
+    grid-template-columns: 1.15fr 1fr;
+    grid-template-areas: 'prompt prompt' 'main status' 'main board' 'main controls';
+  }
+  .player-prompt { grid-area: prompt; }
+  .player-main { grid-area: main; }
+  .player-board { grid-area: board; }
+  .player-status { grid-area: status; }
+  .player-controls { grid-area: controls; }
+  .player .legend { font-size: 11px; gap: 8px; }
+  .player .feedback { min-height: 22px; font-size: 14px; }
+  .player .chord-callout .name { font-size: 26px; }
+  .player .btn { min-height: 42px; }
+  .player .hint { font-size: 13px; padding: 6px 10px; }
+  .player.running {
+    position: fixed; inset: 0; z-index: 40; background: var(--bg); overflow-y: auto;
+    grid-template-areas: 'main status' 'main board' 'main controls';
+    grid-template-rows: auto auto 1fr;
+    padding: max(8px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  }
+  .player.running .player-prompt { display: none; }
+  .player.running .highway-wrap { align-self: stretch; }
+  .player.running .highway-wrap canvas { height: calc(100dvh - 20px); max-height: 360px; }
+  .player.running .micstatus .micmsg { display: none; }
+  .highway-wrap canvas { height: 200px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .lesson-node.current .node-disc, .toast { animation: none; }
+}
+
+/* Lesson pages: picture beside the text when the screen is wide or held sideways. */
+.info-layout { display: flex; flex-direction: column; gap: 16px; }
+@media (min-width: 1000px), (orientation: landscape) and (max-height: 520px) {
+  .info-layout.has-figure { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 24px; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .page { padding-top: 10px; gap: 10px; }
+  .info-body { font-size: 15px; gap: 8px; }
+  .step-title { font-size: 20px; }
+  .seg button { min-height: 34px; }
+  .chip { min-height: 32px; }
+  .nav { padding-top: 2px; }
+  .nav button { flex-direction: row; gap: 6px; font-size: 13px; }
+  .nav button svg { width: 20px; height: 20px; }
+  .page { padding-bottom: 64px; }
 }

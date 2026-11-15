@@ -115,13 +115,17 @@ export function LessonScreen({ id, go }: { id: string; go: Nav }) {
       {step.kind === 'info' && (
         <section className="stack">
           <h2 className="step-title display">{step.title}</h2>
-          {step.figure && <Figure spec={step.figure} />}
-          <div className="info-body">
-            {step.body.map((p, k) => (
-              <p key={k}>{p}</p>
-            ))}
+          <div className={`info-layout${step.figure ? ' has-figure' : ''}`}>
+            {step.figure && <Figure spec={step.figure} />}
+            <div className="stack">
+              <div className="info-body">
+                {step.body.map((p, k) => (
+                  <p key={k}>{p}</p>
+                ))}
+              </div>
+              <button className="btn primary block" onClick={advance}>Continue</button>
+            </div>
           </div>
-          <button className="btn primary block" onClick={advance}>Continue</button>
         </section>
       )}
 
