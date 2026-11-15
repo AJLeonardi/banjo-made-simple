@@ -49,12 +49,23 @@ Hammer-ons / pull-offs / slides have no pick attack; they are shown, and only th
 
 ### Backing audio vs. the mic
 The backing band would leak into the mic. Two backing modes:
-* **Mic-safe (speaker)**: bass an octave low under a 100 Hz low-pass (below the 80 Hz detector band and
-  below the analyser's C3 floor) + a brushed "chuck" band-passed above 3 kHz (above the detector band).
-  Nothing the band plays falls in the band the detectors listen to.
-* **Full band (headphones)**: adds a strummed guitar and, in trades, the app's banjo.
+* **Speaker**: a pure-sine bass kept at or below B2 (≤ 123 Hz, under the detectors' C3 floor —
+  sub-90 Hz would be inaudible on phone speakers), with a soft attack so it doesn't look like a
+  pick, plus a brushed "chuck" high-passed above 7.5 kHz. The pick detector also ignores any
+  onset whose in-range tonal energy is a small share of the overall level (tested: bass alone
+  produces no notes; rolls over the bass are read correctly).
+* **Headphones**: adds a strummed guitar and normal-octave bass.
   Trading rounds where the app plays banjo while you vamp ask for headphones; without them the
   vamp round is judged on timing only, and the app says so.
+
+### Robustness rules learned while testing
+* Picking onsets use a max-of-last-5-frames reference ("SuperFlux") over 80 Hz–6 kHz, so beating
+  between ringing strings isn't an onset but a repeated note's pick click is. The app's own
+  ticks and chucks therefore stay above 8 kHz.
+* A pick event needs either fresh energy (≥ 12 % new) or a strong attack; a weak false onset
+  just before a real pick is replaced by it.
+* Wait mode ignores echoes: the note/chord just played right, heard again within 2 s, and the
+  same wrong sound repeating within 1.5 s, count once.
 
 ## Content model — `music/tab.ts`, `music/arranger.ts`, `content/*`
 
